@@ -63,10 +63,12 @@
 (define (dynamic-array-capacity arr)
   (array-length (dynamic-array-buffer arr)))
 
+(define minimum-dynamic-array-cacpacity 8)
+
 (define (dynamic-array-ensure-capacity! arr min-cap)
   (define new-cap (let loop ([cap (dynamic-array-capacity arr)])
                     (if (< cap min-cap)
-                        (loop (floor (* 3/2 cap)))
+                        (loop (max minimum-dynamic-array-cacpacity (floor (* 3/2 cap))))
                         cap))) 
   (unless (= new-cap (dynamic-array-capacity arr))
     (define new-buff (array-alloc (dynamic-array-buffer arr) new-cap))
