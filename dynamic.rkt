@@ -94,8 +94,7 @@
   (when (array-empty? arr)
     (raise-argument-error 'dynamic-array-pop! "a non-empty array" 0 arr))
   (set-dynamic-array-length! arr (sub1 (dynamic-array-length arr)))
-  (array-ref arr (dynamic-array-length arr))
-  (dynamic-array-length arr))
+  (array-ref arr (dynamic-array-length arr)))
 
 (define (dynamic-array-contents arr)
   (define res (array-alloc (dynamic-array-buffer arr)

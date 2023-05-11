@@ -117,7 +117,7 @@ Pushes a new values onto the @racket[array]. This will cause at most one new all
 }
 
 @defproc[(dynamic-array-pop! [array dynamic-array?]) any/c]{
-Returns the last element of @racket[array] and decreases the @racket[dynamic-array-length] by one. Raises an @racket[exn:fail:contract] if the array is empty. Returns the index of the element popped.
+Returns the last element of @racket[array] and decreases the @racket[dynamic-array-length] by one. Raises an @racket[exn:fail:contract] if the array is empty. 
 }
 
 @defproc[(dynamic-array-contents [array dynamic-array?]) array?]{
