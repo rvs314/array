@@ -112,12 +112,12 @@ Grows the underlying buffer of @racket[array] until it has a capacity of at leas
 Pushes an @tech{array} of new values onto the @racket[array]. This will cause at most one new allocation.
 }
 
-@defproc[(dynamic-array-push! [array dynamic-array?] [new-value any/c]) void?]{
-Pushes a new values onto the @racket[array]. This will cause at most one new allocation.
+@defproc[(dynamic-array-push! [array dynamic-array?] [new-value any/c]) exact-nonnegative-integer?]{
+Pushes a new values onto the @racket[array]. This will cause at most one new allocation. Returns the index of the element pushed.
 }
 
 @defproc[(dynamic-array-pop! [array dynamic-array?]) any/c]{
-Returns the last element of @racket[array] and decreases the @racket[dynamic-array-length] by one. Raises an @racket[exn:fail:contract] if the array is empty.
+Returns the last element of @racket[array] and decreases the @racket[dynamic-array-length] by one. Raises an @racket[exn:fail:contract] if the array is empty. Returns the index of the element popped.
 }
 
 @defproc[(dynamic-array-contents [array dynamic-array?]) array?]{

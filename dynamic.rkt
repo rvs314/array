@@ -85,14 +85,17 @@
 
 (define (dynamic-array-push! arr new-value)
   (dynamic-array-ensure-capacity! arr (add1 (dynamic-array-length arr)))
+  (define idx (dynamic-array-length arr))
   (set-dynamic-array-length! arr (add1 (dynamic-array-length arr)))
-  (array-set! arr (sub1 (dynamic-array-length arr)) new-value))
+  (array-set! arr idx new-value)
+  idx)
 
 (define (dynamic-array-pop! arr)
   (when (array-empty? arr)
     (raise-argument-error 'dynamic-array-pop! "a non-empty array" 0 arr))
   (set-dynamic-array-length! arr (sub1 (dynamic-array-length arr)))
-  (array-ref arr (dynamic-array-length arr)))
+  (array-ref arr (dynamic-array-length arr))
+  (dynamic-array-length arr))
 
 (define (dynamic-array-contents arr)
   (define res (array-alloc (dynamic-array-buffer arr)
