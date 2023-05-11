@@ -1,0 +1,4 @@
+* array: Generic Arrays for Racket
+
+=array= is a small package which provides a generic wrapper over Racket's array-like data-structures, as well as a small wrapper for generic dynamic arrays. 
+
