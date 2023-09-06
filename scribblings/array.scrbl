@@ -19,8 +19,8 @@ The @racketmodname[array] module provides a @ref{generic interface} for the @def
 A @ref{generic interface} for arrays. The interface defines the following methods:
 
 @itemlist[@item{@racket[array-set!]}
-          @item{@racket[array-ref!]}
-          @item{@racket[array-length!]}
+          @item{@racket[array-ref]}
+          @item{@racket[array-length]}
           @item{@racket[array-alloc]}
           @item{@racket[array-copy!]}
           @item{@racket[in-array]}]
