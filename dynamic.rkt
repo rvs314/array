@@ -42,10 +42,10 @@
      (ref (dynamic-array-buffer array) idx))
    (define (array-set! array idx val)
      (set! (dynamic-array-buffer array) idx val))
-   (define (array-copy! dest dest-start array
-                        [array-start 0] [array-end (dynamic-array-length array)])
-     (copy! dest dest-start (dynamic-array-buffer array)
-            array-start array-end))
+   (define (array-copy! dest dest-start src
+                        [src-start 0] [src-end (dynamic-array-length src)])
+     (copy! dest dest-start (dynamic-array-buffer src)
+            src-start src-end))
    (define (array-alloc array len)
      (dynamic-array (alloc (dynamic-array-buffer array) len) len))
    (define (in-array arr)
