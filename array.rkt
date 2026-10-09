@@ -20,8 +20,10 @@
     (pattern type:id
              #:attr copy? #f
              #:attr in? #f)
-    (pattern [type:id (~alt (~optional (~seq #:copy? copy?:boolean))
-                            (~optional (~seq #:in? in?:boolean)))
+    (pattern [type:id (~alt (~optional (~seq #:copy? copy?:boolean)
+                                       #:too-many "repeated #:copy? flag")
+                            (~optional (~seq #:in? in?:boolean)
+                                       #:too-many "repeated #:in? flag"))
                       ...])))
 
 ;; (define-generic-array name #:fast-defaults (type ...) #:defaults (type ...))
