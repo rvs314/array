@@ -14,16 +14,21 @@
 
 (begin-for-syntax
   ;; A type to register as an array: either a bare name, or a name with
-  ;; flags saying whether to use its own `<type>-copy!` and `in-<type>`.
-  ;; Without a flag, the function is used whenever it's bound.
+  ;; options. #:copy? and #:in? say whether to use the type's own
+  ;; `<type>-copy!` and `in-<type>`; without them, each is used whenever
+  ;; it's bound. #:alloc replaces the default allocator, which calls
+  ;; `make-<type>` with just a length.
   (define-syntax-class type-spec
     (pattern type:id
              #:attr copy? #f
-             #:attr in? #f)
+             #:attr in? #f
+             #:attr alloc #f)
     (pattern [type:id (~alt (~optional (~seq #:copy? copy?:boolean)
                                        #:too-many "repeated #:copy? flag")
                             (~optional (~seq #:in? in?:boolean)
-                                       #:too-many "repeated #:in? flag"))
+                                       #:too-many "repeated #:in? flag")
+                            (~optional (~seq #:alloc alloc:expr)
+                                       #:too-many "repeated #:alloc option"))
                       ...])))
 
 ;; (define-generic-array name #:fast-defaults (type ...) #:defaults (type ...))
@@ -41,7 +46,7 @@
                    [name-copy!  (method "~a-copy!")]
                    [name-alloc  (method "~a-alloc")]
                    [in-name     (method "in-~a")])
-       (define (instance type copy? in?)
+       (define (instance type copy? in? alloc)
          (define (fmt fs) (format-id type fs type))
          (define (use? flag fs)
            (if flag
@@ -51,7 +56,9 @@
             (define name-set!   #,(fmt "~a-set!"))
             (define name-ref    #,(fmt "~a-ref"))
             (define name-length #,(fmt "~a-length"))
-            (define (name-alloc _ len) (#,(fmt "make-~a") len))
+            #,(if alloc
+                  #`(define name-alloc #,alloc)
+                  #`(define (name-alloc _ len) (#,(fmt "make-~a") len)))
             #,@(if (use? copy? "~a-copy!")
                    (list #`(define name-copy! #,(fmt "~a-copy!")))
                    '())
@@ -81,17 +88,21 @@
            (#,@(map instance
                     (attribute fast.type)
                     (attribute fast.copy?)
-                    (attribute fast.in?)))
+                    (attribute fast.in?)
+                    (attribute fast.alloc)))
            #:defaults
            (#,@(map instance
                     (attribute slow.type)
                     (attribute slow.copy?)
-                    (attribute slow.in?)))))]))
+                    (attribute slow.in?)
+                    (attribute slow.alloc)))))]))
 
 (define-generic-array array
   #:fast-defaults (bytes vector string)
   #:defaults (flvector fxvector extflvector
-              cvector s8vector
+              [cvector #:alloc (lambda (v len)
+                                 (make-cvector (cvector-type v) len))]
+              s8vector
               u16vector s16vector
               u32vector s32vector
               u64vector s64vector
@@ -113,7 +124,7 @@
   (for/vector #:length (array-length arr) ([x (in-array arr)]) x))
 
 (module+ test
-  (require rackunit)
+  (require rackunit (only-in ffi/unsafe _int))
 
   (check-equal? (array->vector "alphabet")
                 '#(#\a #\l #\p #\h #\a #\b #\e #\t))
@@ -129,4 +140,8 @@
   (check-equal? (u8vector 2 40 9 12) foo)
 
   (check-equal? (array-alloc foo 5)
-                (u8vector 0 0 0 0 0)))
+                (u8vector 0 0 0 0 0))
+
+  (define cv (array-alloc (cvector _int 1 2 3) 2))
+  (check-equal? (cvector-length cv) 2)
+  (check-equal? (cvector-type cv) _int))
