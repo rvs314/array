@@ -93,7 +93,7 @@ Returns a new @tech{dynamic array}.
 }
 
 @defproc[(dynamic-array-buffer [array dynamic-array?]) array?]{
-Returns the underling buffer of the @tech{dynamic array} @racket[array].
+Returns the underlying buffer of the @tech{dynamic array} @racket[array].
 }
 
 @defproc[(dynamic-array-length [array dynamic-array?]) exact-nonnegative-integer?]{
@@ -104,7 +104,7 @@ Returns the length of the @tech{dynamic array} @racket[array].
 Returns the capacity of the @tech{dynamic array} @racket[array]. This is increased automatically by @racket[dynamic-array-append!] and @racket[dynamic-array-push!] and can be increased manually by calling @racket[dynamic-array-ensure-capacity!].
 }
 
-@defproc[(dynamic-array-ensure-capacity [array dynamic-array?] [min-cap exact-nonnegative-integer?]) void?]{
+@defproc[(dynamic-array-ensure-capacity! [array dynamic-array?] [min-cap exact-nonnegative-integer?]) void?]{
 Grows the underlying buffer of @racket[array] until it has a capacity of at least @racket[min-cap].
 }
 
@@ -113,7 +113,7 @@ Pushes an @tech{array} of new values onto the @racket[array]. This will cause at
 }
 
 @defproc[(dynamic-array-push! [array dynamic-array?] [new-value any/c]) exact-nonnegative-integer?]{
-Pushes a new values onto the @racket[array]. This will cause at most one new allocation. Returns the index of the element pushed.
+Pushes a new value onto the @racket[array]. This will cause at most one new allocation. Returns the index of the element pushed.
 }
 
 @defproc[(dynamic-array-pop! [array dynamic-array?]) any/c]{

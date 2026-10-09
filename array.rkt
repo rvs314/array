@@ -1,10 +1,11 @@
-#lang racket
+#lang racket/base
 
 (require racket/generic
+         racket/sequence
          racket/flonum racket/fixnum racket/extflonum
          ffi/cvector
          ffi/vector
-         (for-syntax racket/syntax))
+         (for-syntax racket/base racket/syntax))
 
 (provide gen:array array?
          array-set! array-ref array-length array-copy! array-alloc
@@ -18,9 +19,9 @@
   (syntax-case stx ()
     [(_)
      (with-names (array array-set! array-ref array-length
-                        array-copy! array-alloc in-array) 
+                        array-copy! array-alloc in-array)
        (define default-types
-         (syntax->list #'(cvector u8vector s8vector
+         (syntax->list #'(cvector s8vector
                                   u16vector s16vector
                                   u32vector s32vector
                                   u64vector s64vector
@@ -73,9 +74,9 @@
             #,@(map array-definition default-types))))]))
 
 (define-generic-array)
-          
+
 (define (array-empty? arr)
- (zero? (array-length arr)))
+  (zero? (array-length arr)))
 
 (define (array-first arr)
   (array-ref arr 0))
@@ -84,14 +85,10 @@
   (array-ref arr (sub1 (array-length arr))))
 
 (define (array->list arr)
-  (sequence->list (in-array arr)))
+  (for/list ([x (in-array arr)]) x))
 
 (define (array->vector arr)
-  (define v (make-vector (array-length arr)))
-  (for ([i (in-naturals)]
-        [o (in-array arr)])
-    (vector-set! v i o))
-  v)
+  (for/vector #:length (array-length arr) ([x (in-array arr)]) x))
 
 (module+ test
   (require rackunit)

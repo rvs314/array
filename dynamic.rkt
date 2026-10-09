@@ -1,6 +1,6 @@
-#lang racket
+#lang racket/base
 
-(require "array.rkt" racket/generic)
+(require "array.rkt" racket/generic racket/stream)
 
 (provide (except-out (struct-out dynamic-array) dynamic-array)
          (rename-out [new-dynamic-array dynamic-array])
@@ -41,7 +41,7 @@
    (define (array-ref array idx)
      (ref (dynamic-array-buffer array) idx))
    (define (array-set! array idx val)
-     (set! (dynamic-array-buffer array) idx val)) 
+     (set! (dynamic-array-buffer array) idx val))
    (define (array-copy! dest dest-start array
                         [array-start 0] [array-end (dynamic-array-length array)])
      (copy! dest dest-start (dynamic-array-buffer array)
@@ -63,38 +63,41 @@
 (define (dynamic-array-capacity arr)
   (array-length (dynamic-array-buffer arr)))
 
-(define minimum-dynamic-array-cacpacity 8)
+(define minimum-dynamic-array-capacity 8)
 
 (define (dynamic-array-ensure-capacity! arr min-cap)
-  (define new-cap (let loop ([cap (dynamic-array-capacity arr)])
-                    (if (< cap min-cap)
-                        (loop (max minimum-dynamic-array-cacpacity (floor (* 3/2 cap))))
-                        cap))) 
-  (unless (= new-cap (dynamic-array-capacity arr))
+  (define old-cap (dynamic-array-capacity arr))
+  (define new-cap
+    (let loop ([cap old-cap])
+      (if (< cap min-cap)
+          (loop (max minimum-dynamic-array-capacity (floor (* 3/2 cap))))
+          cap)))
+  (unless (= new-cap old-cap)
     (define new-buff (array-alloc (dynamic-array-buffer arr) new-cap))
     (array-copy! new-buff 0 (dynamic-array-buffer arr)
                  0 (dynamic-array-length arr))
     (set-dynamic-array-buffer! arr new-buff)))
 
 (define (dynamic-array-append! arr new-values)
-  (define new-len (+ (dynamic-array-length arr)
-                     (array-length new-values)))
+  (define len (dynamic-array-length arr))
+  (define new-len (+ len (array-length new-values)))
   (dynamic-array-ensure-capacity! arr new-len)
-  (array-copy! (dynamic-array-buffer arr) (dynamic-array-length arr) new-values) 
+  (array-copy! (dynamic-array-buffer arr) len new-values)
   (set-dynamic-array-length! arr new-len))
 
 (define (dynamic-array-push! arr new-value)
-  (dynamic-array-ensure-capacity! arr (add1 (dynamic-array-length arr)))
   (define idx (dynamic-array-length arr))
-  (set-dynamic-array-length! arr (add1 (dynamic-array-length arr)))
+  (dynamic-array-ensure-capacity! arr (add1 idx))
+  (set-dynamic-array-length! arr (add1 idx))
   (array-set! arr idx new-value)
   idx)
 
 (define (dynamic-array-pop! arr)
   (when (array-empty? arr)
     (raise-argument-error 'dynamic-array-pop! "a non-empty array" 0 arr))
-  (set-dynamic-array-length! arr (sub1 (dynamic-array-length arr)))
-  (array-ref arr (dynamic-array-length arr)))
+  (define idx (sub1 (dynamic-array-length arr)))
+  (set-dynamic-array-length! arr idx)
+  (array-ref arr idx))
 
 (define (dynamic-array-contents arr)
   (define res (array-alloc (dynamic-array-buffer arr)
@@ -103,7 +106,7 @@
   res)
 
 (module+ test
-  (require rackunit)
+  (require rackunit racket/function)
 
   (define da (new-dynamic-array "four"))
 
