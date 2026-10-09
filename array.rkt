@@ -20,16 +20,25 @@
     [(_)
      (with-names (array array-set! array-ref array-length
                         array-copy! array-alloc in-array)
+       (define fast-default-types
+         (syntax->list #'(bytes vector string)))
        (define default-types
-         (syntax->list #'(cvector s8vector
-                                  u16vector s16vector
-                                  u32vector s32vector
-                                  u64vector s64vector
-                                  f32vector f64vector f80vector)))
-       (define (array-definition name [copy #f] [in #f])
+         (syntax->list #'(flvector fxvector extflvector
+                                   cvector s8vector
+                                   u16vector s16vector
+                                   u32vector s32vector
+                                   u64vector s64vector
+                                   f32vector f64vector f80vector)))
+       ;; By default, a type's own `<type>-copy!` and `in-<type>` are used
+       ;; whenever they're bound; pass #:copy? or #:in? to override this.
+       (define (array-definition name #:copy? [copy 'auto] #:in? [in 'auto])
          (define (fmt str [n name])
            (format-id n str n))
          (define (def fs [rst #f]) #`(define #,(fmt fs #'array) #,(or rst (fmt fs name))))
+         (define (use? flag fs)
+           (if (eq? flag 'auto)
+               (and (identifier-binding (fmt fs)) #t)
+               flag))
          #`[#,(fmt "~a?")
             #,(def "~a-set!")
             #,(def "~a-ref")
@@ -37,8 +46,8 @@
             #,(def "~a-alloc"
                 #`(lambda (_ arg)
                     (#,(fmt "make-~a") arg)))
-            #,@(if copy (list (def "~a-copy!")) '())
-            #,@(if in   (list (def "in-~a"))    '())])
+            #,@(if (use? copy "~a-copy!") (list (def "~a-copy!")) '())
+            #,@(if (use? in "in-~a")      (list (def "in-~a"))    '())])
        #`(define-generics array
            (array-set!   array idx value)
            (array-ref    array idx)
@@ -59,14 +68,9 @@
                (lambda (i) (ref arr i))
                (in-range (len arr))))]
            #:fast-defaults
-           (#,(array-definition #'bytes  #t #t)
-            #,(array-definition #'vector #t #t)
-            #,(array-definition #'string #t #t))
+           (#,@(map array-definition fast-default-types))
            #:defaults
-           (#,(array-definition #'flvector #f #t)
-            #,(array-definition #'fxvector #f #t)
-            #,(array-definition #'extflvector #f #t)
-            #,@(map array-definition default-types))))]))
+           (#,@(map array-definition default-types))))]))
 
 (define-generic-array)
 
