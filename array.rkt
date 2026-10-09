@@ -37,12 +37,8 @@
             #,(def "~a-alloc"
                 #`(lambda (_ arg)
                     (#,(fmt "make-~a") arg)))
-            #,@(cond [(eq? #t copy) (list (def "~a-copy!"))]
-                     [(not copy)    (list)]
-                     [else          (list copy)])
-            #,@(cond [(eq? #t in)   (list (def "in-~a"))]
-                     [(not in)      (list)]
-                     [else          (list in)])])
+            #,@(if copy (list (def "~a-copy!")) '())
+            #,@(if in   (list (def "in-~a"))    '())])
        #`(define-generics array
            (array-set!   array idx value)
            (array-ref    array idx)
@@ -70,7 +66,6 @@
            (#,(array-definition #'flvector #f #t)
             #,(array-definition #'fxvector #f #t)
             #,(array-definition #'extflvector #f #t)
-            #,(array-definition #'u8vector #'bytes-copy! #'in-bytes)
             #,@(map array-definition default-types))))]))
 
 (define-generic-array)
